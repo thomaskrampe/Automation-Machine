@@ -64,29 +64,30 @@ function Invoke-AMActionItemCreateGroup
 		New-AMGroup -Name $Name -LDAPPath $OULDAP -Scope $Scope -Description ($am_col_gdescription | Expand-AMEnvironmentVariables) | Out-Null
 	}
 	
-}
 
-# Wait for AD group to exist
-# This is an extension scriplet for the Create Securityy Group Action Item in Automation Machine
-# AI: 6c15e425-c527-40a5-b6bc-abfd85457a07 - Create Security Group
 
-Write-AMInfo "Getting DC replication neighbours"
-$DC = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController()
-$SiteDCs = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindAllDiscoverableDomainControllers($DC.SiteName) | Select-Object -ExpandProperty Name 
-$ReplicationNeighbor = $DC.GetAllReplicationNeighbors() | ? {$SiteDCs -contains $_.sourceserver} | Select-Object -Unique -ExpandProperty SourceServer -First 1
+	# Wait for AD group to exist
+	# This is an extension scriplet for the Create Securityy Group Action Item in Automation Machine
+	# AI: 6c15e425-c527-40a5-b6bc-abfd85457a07 - Create Security Group
 
-If ($ReplicationNeighbor -ne $null)
-{
-    $MaxCount = 300
-    $i = 0;
-    while ((Get-AMLDAPPath -Name $Name) -eq $null)
-    {
-        $i += 1
-        if ($i -ge $MaxCount) {throw "Unable to find AD group: $Name on $($ReplicationNeighbor) after $($MaxCount) seconds."}
-        Write-Verbose "Waiting for $Name to appear on $ReplicationNeighbor"
-        Start-Sleep -Seconds 1
-    }
-}
-else {
-    Write-AMInfo "No DC replication neighbors found, not waiting for replication"
+	Write-AMInfo "Getting DC replication neighbours"
+	$DC = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController()
+	$SiteDCs = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindAllDiscoverableDomainControllers($DC.SiteName) | Select-Object -ExpandProperty Name 
+	$ReplicationNeighbor = $DC.GetAllReplicationNeighbors() | ? {$SiteDCs -contains $_.sourceserver} | Select-Object -Unique -ExpandProperty SourceServer -First 1
+
+	If ($ReplicationNeighbor -ne $null)
+	{
+    		$MaxCount = 300
+    		$i = 0;
+    		while ((Get-AMLDAPPath -Name $Name) -eq $null)
+    		{
+        		$i += 1
+        		if ($i -ge $MaxCount) {throw "Unable to find AD group: $Name on $($ReplicationNeighbor) after $($MaxCount) seconds."}
+        		Write-Verbose "Waiting for $Name to appear on $ReplicationNeighbor"
+        		Start-Sleep -Seconds 1
+    		}
+	}
+	else {
+   		 Write-AMInfo "No DC replication neighbors found, not waiting for replication"
+	}
 }
