@@ -1,6 +1,6 @@
 ﻿<#
 	.Synopsis
-	Invokes the create group action item.
+	Invokes the create group action item. 
 
 	.Description
  	Invokes the specified create group actionitem.
